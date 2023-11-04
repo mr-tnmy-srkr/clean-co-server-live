@@ -1,14 +1,14 @@
 const express = require("express");
 const app = express();
-require('dotenv').config()
+require("dotenv").config();
 const port = 5000;
 
 //parsers
-app.use(express.json())
+app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
-const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@myprojectscluster.drcktji.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@myprojectscluster.drcktji.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -18,25 +18,31 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
-const serviceCollection = client.db('clean-co').collection('services')
-const bookingCollection = client.db('clean-co').collection('bookings')
-
+const serviceCollection = client.db("clean-co").collection("services");
+const bookingCollection = client.db("clean-co").collection("bookings");
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
-    app.get('/api/v1/services', async (req, res) => {
-        const cursor = serviceCollection.find()
-        const result = await cursor.toArray()
-        res.send(result)
-    })
-    app.post('/api/v1/user/create-booking', async (req, res) => {
-        const booking = req.body;
-        const result = await bookingCollection.insertOne(booking)
-        res.send(result)
-    })
+    app.get("/api/v1/services", async (req, res) => {
+      const cursor = serviceCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.post("/api/v1/user/create-booking", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
+      res.send(result);
+    });
+
+    app.delete("/api/v1/user/cancel-booking/:bookingId", async (req, res) => {
+      const id = req.params.bookingId;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     client.db("admin").command({ ping: 1 });
