@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors')
 const app = express();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
@@ -8,6 +9,12 @@ const port = 5000;
 //middleware (parsers)
 app.use(express.json());
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  })
+);
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
@@ -25,6 +32,10 @@ const serviceCollection = client.db("clean-co").collection("services");
 const bookingCollection = client.db("clean-co").collection("bookings");
 
 //middleware
+const logger = (req, res, next) => {
+  console.log("log-info", req.method, req.url);
+  next();
+};
 //verify token and grant access
 const gateman = (req, res, next) => {
   const token = req?.cookies?.token;
@@ -52,7 +63,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
-    app.get("/api/v1/services", gateman, async (req, res) => {
+    app.get("/api/v1/services", logger,gateman, async (req, res) => {
       const cursor = serviceCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -64,7 +75,7 @@ async function run() {
     });
 
     // user specific bookings
-    app.get("/api/v1/user/bookings", gateman, async (req, res) => {
+    app.get("/api/v1/user/bookings",logger, gateman, async (req, res) => {
       const queryEmail = req.query.email;
       const tokenEmail = req.user.email;
       // console.log(queryEmail, tokenEmail);
@@ -74,7 +85,7 @@ async function run() {
       }
 
       //query ?email="mir@gmail.com" // email specific
-      // query ?   X    // all data
+      // query ?   {}    // all data
       let query = {};
       if (queryEmail) {
         query.email = queryEmail;
@@ -93,7 +104,7 @@ async function run() {
     });
 
     //jwt access token
-    app.post("/api/v1/auth/access-token", async (req, res) => {
+    app.post("/api/v1/auth/access-token",logger, async (req, res) => {
       // creating token and send to client
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
@@ -104,7 +115,7 @@ async function run() {
         .cookie("token", token, {
           httpOnly: true,
           secure: true,
-          sameSite: true,
+          sameSite: "none",
         })
         .send({ success: true });
     });
