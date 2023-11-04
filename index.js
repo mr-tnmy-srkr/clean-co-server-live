@@ -2,13 +2,12 @@ const express = require("express");
 const app = express();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const cookieParser = require('cookie-parser')
+const cookieParser = require("cookie-parser");
 const port = 5000;
 
 //middleware (parsers)
 app.use(express.json());
-app.use(cookieParser())
-
+app.use(cookieParser());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
@@ -32,20 +31,20 @@ const gateman = (req, res, next) => {
   // or
   // const { token } = req.cookies
   // console.log(token);
-  
- //if client does not send token
- if(!token){
-  return res.status(401).send({message:'You are not authorized'})
-}
- // verify a token symmetric
- jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-  if (err) {
+
+  //if client does not send token
+  if (!token) {
     return res.status(401).send({ message: "You are not authorized" });
   }
-  // attach decoded user so that others can get it
-  req.user = decoded;
-  next();
-});
+  // verify a token symmetric
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(401).send({ message: "You are not authorized" });
+    }
+    // attach decoded user so that others can get it
+    req.user = decoded;
+    next();
+  });
 };
 
 async function run() {
@@ -53,7 +52,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
-    app.get("/api/v1/services",gateman, async (req, res) => {
+    app.get("/api/v1/services", gateman, async (req, res) => {
       const cursor = serviceCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -61,6 +60,28 @@ async function run() {
     app.post("/api/v1/user/create-booking", async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
+      res.send(result);
+    });
+
+    // user specific bookings
+    app.get("/api/v1/user/bookings", gateman, async (req, res) => {
+      const queryEmail = req.query.email;
+      const tokenEmail = req.user.email;
+      // console.log(queryEmail, tokenEmail);
+
+      if (queryEmail !== tokenEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+
+      //query ?email="mir@gmail.com" // email specific
+      // query ?   X    // all data
+      let query = {};
+      if (queryEmail) {
+        query.email = queryEmail;
+      }
+      // console.log(query);
+      // const result = await bookingCollection.findOne({email:queryEmail});
+      const result = await bookingCollection.find(query).toArray();
       res.send(result);
     });
 
