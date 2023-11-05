@@ -11,8 +11,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    // origin: ["http://localhost:5173", "http://localhost:5174"],
-    origin: ["https://clean-co-client-live.vercel.app", "https://clean-co-client-live.netlify.app"],
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    // origin: ["https://clean-co-client-live.vercel.app", "https://clean-co-client-live.netlify.app"],
     credentials: true,
   })
 );
@@ -170,7 +170,7 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    client.db("admin").command({ ping: 1 });
+    // client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
