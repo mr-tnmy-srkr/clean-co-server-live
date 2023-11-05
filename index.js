@@ -34,7 +34,7 @@ const bookingCollection = client.db("clean-co").collection("bookings");
 
 //middleware
 const logger = (req, res, next) => {
-  console.log("log-info", req.method, req.url);
+  // console.log("log-info", req.method, req.url);
   next();
 };
 //verify token and grant access
@@ -95,8 +95,8 @@ async function run() {
       if (sortField && sortOrder) {
         sortObj[sortField] = sortOrder;
       }
-      console.log(queryObj); //queryObj = { category: 'home-services' }
-      console.log(sortObj); // sortObj = { price: 'desc' }
+      // console.log(queryObj); //queryObj = { category: 'home-services' }
+      // console.log(sortObj); // sortObj = { price: 'desc' }
       // const cursor = serviceCollection.find({ category: 'home-services' }).sort({price:"desc"});
       const cursor = serviceCollection
         .find(queryObj)
