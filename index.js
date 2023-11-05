@@ -1,5 +1,5 @@
 const express = require("express");
-const cors = require('cors')
+const cors = require("cors");
 const app = express();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
@@ -63,11 +63,35 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
-    app.get("/api/v1/services", logger,gateman, async (req, res) => {
-      const cursor = serviceCollection.find();
+    //filtering/sorting (work on both conditions)
+    // http://localhost:5000//api/v1/services
+    // (Query) >>>http://localhost:5000//api/v1/services?category=home-services
+
+    //(sort via asc)>>>http://localhost:5000/api/v1/services?sortField=price&sortOrder=asc
+    //(sort via desc)>>>http://localhost:5000/api/v1/services?sortField=price&sortOrder=desc
+
+    //(Query r upor Sort) >> http://localhost:5000/api/v1/services?category=home-services&sortField=price&sortOrder=desc
+    app.get("/api/v1/services", logger, gateman, async (req, res) => {
+      let queryObj = {};
+      let sortObj = {};
+      const category = req.query.category;
+      const sortField = req.query.sortField;
+      const sortOrder = req.query.sortOrder;
+
+      if (category) {
+        queryObj.category = category;
+      }
+      if (sortField && sortOrder) {
+        sortObj[sortField] = sortOrder;
+      }
+      console.log(queryObj); //queryObj = { category: 'home-services' }
+      console.log(sortObj); // sortObj = { price: 'desc' }
+      // const cursor = serviceCollection.find({ category: 'home-services' }).sort({price:"desc"});
+      const cursor = serviceCollection.find(queryObj).sort(sortObj);
       const result = await cursor.toArray();
       res.send(result);
     });
+
     app.post("/api/v1/user/create-booking", async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
@@ -75,7 +99,7 @@ async function run() {
     });
 
     // user specific bookings
-    app.get("/api/v1/user/bookings",logger, gateman, async (req, res) => {
+    app.get("/api/v1/user/bookings", logger, gateman, async (req, res) => {
       const queryEmail = req.query.email;
       const tokenEmail = req.user.email;
       // console.log(queryEmail, tokenEmail);
@@ -104,7 +128,7 @@ async function run() {
     });
 
     //jwt access token
-    app.post("/api/v1/auth/access-token",logger, async (req, res) => {
+    app.post("/api/v1/auth/access-token", logger, async (req, res) => {
       // creating token and send to client
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
