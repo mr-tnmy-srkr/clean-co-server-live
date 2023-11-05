@@ -76,14 +76,13 @@ async function run() {
     //http://localhost:5000/api/v1/services?page=1&limit=10
 
     //all in -out only for example (query,sorting,pagination)
-    //localhost:5000/api/v1/services?category=home-services&sortField=price&sortOrder=desc&page=1&limit=5
-    http: app.get("/api/v1/services", logger, gateman, async (req, res) => {
+    //http: localhost:5000/api/v1/services?category=home-services&sortField=price&sortOrder=desc&page=1&limit=5
+    app.get("/api/v1/services", logger, gateman, async (req, res) => {
       let queryObj = {};
       let sortObj = {};
       const category = req.query.category;
       const sortField = req.query.sortField;
       const sortOrder = req.query.sortOrder;
-
       //pagination
       const page = Number(req.query.page);
       const limit = Number(req.query.limit);
@@ -104,11 +103,17 @@ async function run() {
         .limit(limit)
         .sort(sortObj);
       const result = await cursor.toArray();
-
       // count all data
       const total = await serviceCollection.countDocuments();
-
       res.send({total, result});
+    });
+
+    //get particular services by id for booking
+    app.get("/api/v1/services/:serviceId", async (req, res) => {
+      const id = req.params.serviceId;
+      const query = { _id: new ObjectId(id) };
+      const result = await serviceCollection.findOne(query);
+      res.send(result);
     });
 
     app.post("/api/v1/user/create-booking", async (req, res) => {
