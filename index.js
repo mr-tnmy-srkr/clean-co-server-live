@@ -71,12 +71,23 @@ async function run() {
     //(sort via desc)>>>http://localhost:5000/api/v1/services?sortField=price&sortOrder=desc
 
     //(Query r upor Sort) >> http://localhost:5000/api/v1/services?category=home-services&sortField=price&sortOrder=desc
-    app.get("/api/v1/services", logger, gateman, async (req, res) => {
+
+    //pagination format
+    //http://localhost:5000/api/v1/services?page=1&limit=10
+
+    //all in -out only for example (query,sorting,pagination)
+    //localhost:5000/api/v1/services?category=home-services&sortField=price&sortOrder=desc&page=1&limit=5
+    http: app.get("/api/v1/services", logger, gateman, async (req, res) => {
       let queryObj = {};
       let sortObj = {};
       const category = req.query.category;
       const sortField = req.query.sortField;
       const sortOrder = req.query.sortOrder;
+
+      //pagination
+      const page = Number(req.query.page);
+      const limit = Number(req.query.limit);
+      const skip = (page - 1) * limit;
 
       if (category) {
         queryObj.category = category;
@@ -87,9 +98,17 @@ async function run() {
       console.log(queryObj); //queryObj = { category: 'home-services' }
       console.log(sortObj); // sortObj = { price: 'desc' }
       // const cursor = serviceCollection.find({ category: 'home-services' }).sort({price:"desc"});
-      const cursor = serviceCollection.find(queryObj).sort(sortObj);
+      const cursor = serviceCollection
+        .find(queryObj)
+        .skip(skip)
+        .limit(limit)
+        .sort(sortObj);
       const result = await cursor.toArray();
-      res.send(result);
+
+      // count all data
+      const total = await serviceCollection.countDocuments();
+
+      res.send({total, result});
     });
 
     app.post("/api/v1/user/create-booking", async (req, res) => {
