@@ -11,7 +11,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    // origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: ["https://clean-co-client-live.vercel.app", "https://clean-co-client-live.netlify.app"],
     credentials: true,
   })
 );
@@ -61,7 +62,7 @@ const gateman = (req, res, next) => {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    client.connect();
+    // client.connect();
 
     //filtering/sorting (work on both conditions)
     // http://localhost:5000//api/v1/services
