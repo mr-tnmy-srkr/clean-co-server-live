@@ -12,7 +12,7 @@ app.use(cookieParser());
 app.use(
   cors({
     // origin: ["http://localhost:5173", "http://localhost:5174"],
-    origin: ["https://clean-co-client-live.vercel.app", "https://clean-co-client-live.netlify.app"],
+    origin: ["https://user-email-password-auth-3aa38.web.app","https://user-email-password-auth-3aa38.firebaseapp.com","https://clean-co-client-live.vercel.app", "https://clean-co-client-live.netlify.app"],
     credentials: true,
   })
 );
