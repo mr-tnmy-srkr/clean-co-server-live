@@ -11,8 +11,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-    // origin: ["https://clean-co-client-live.vercel.app", "https://clean-co-client-live.netlify.app"],
+    // origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: ["https://clean-co-client-live.vercel.app", "https://clean-co-client-live.netlify.app"],
     credentials: true,
   })
 );
@@ -135,7 +135,7 @@ async function run() {
 
       //query ?email="mir@gmail.com" // email specific
       // query ?   {}    // all data
-      let query = {};
+      let query = {}; 
       if (queryEmail) {
         query.email = queryEmail;
       }
@@ -163,8 +163,9 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: true,
-          sameSite: "none",
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
     });
